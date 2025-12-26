@@ -9,20 +9,21 @@
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial}
 .hidden{display:none}
-header{text-align:center;padding:20px}
-h1{color:#e10600;font-size:42px;margin:0}
-h2{font-weight:normal;margin-top:5px}
-.container{max-width:900px;margin:auto;padding:10px}
-input,button{width:100%;padding:6px;margin:4px 0;background:#111;border:1px solid #e10600;color:#fff}
+header{text-align:center;padding:15px}
+h1{color:#e10600;font-size:36px;margin:0}
+h2{font-weight:normal;margin-top:3px;font-size:18px}
+.container{max-width:600px;margin:auto;padding:10px}
+input,button{width:100%;padding:6px;margin:4px 0;background:#111;border:1px solid #e10600;color:#fff;font-size:14px}
 button{cursor:pointer}
-#cards{max-height:350px;overflow-y:auto}
-#adminList{max-height:350px;overflow-y:auto}
-.card{border:1px solid #e10600;padding:6px;margin:6px 0;background:#0b0b0b;position:relative;font-size:14px}
-.delete{position:absolute;top:3px;right:5px;cursor:pointer;color:#e10600;font-weight:bold}
+#cards{max-height:300px;overflow-y:auto}
+#adminList{max-height:300px;overflow-y:auto}
+.card{border:1px solid #e10600;padding:6px;margin:4px 0;background:#0b0b0b;position:relative;font-size:14px;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
+.card-info{display:flex;flex-direction:column;}
+.delete{cursor:pointer;color:#e10600;font-weight:bold;margin-left:8px}
 .footer{position:fixed;bottom:0;width:100%;background:#050505;padding:10px;text-align:center}
-#adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:400px;overflow-y:auto}
-.admin-card{border:1px solid #333;padding:6px;margin:6px 0;font-size:14px}
-canvas{margin-top:20px}
+#adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:350px;overflow-y:auto}
+.admin-card{border:1px solid #333;padding:6px;margin:4px 0;font-size:14px;border-radius:4px}
+canvas{margin-top:10px;width:100% !important;height:200px !important;}
 </style>
 </head>
 <body>
@@ -173,8 +174,11 @@ function renderCards(){
     const div=document.createElement("div");
     div.className="card";
     div.innerHTML=`
+     <div class="card-info">
+      <b>${c.user}</b>
+      ${c.fetish} | Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
+     </div>
      <span class="delete" data-id="${d.id}">X</span>
-     <b>${c.user}</b> | ${c.fetish} | Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
     `;
     cards.appendChild(div);
 
