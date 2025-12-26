@@ -10,101 +10,112 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{ box-sizing:border-box; }
-
-html, body{
-  width:100%;
-  overflow-x:hidden;
-}
-
+/* BODY Y CONTENEDOR PRINCIPAL */
 body{
   margin:0;
   background:#000;
   color:#fff;
   font-family:Arial, sans-serif;
 }
-
 .container{
-  max-width:420px;
+  max-width:400px;
   margin:auto;
-  padding:12px;
+  padding:10px;
+  box-sizing:border-box;
 }
 
 /* HEADERS */
-header{
-  text-align:center;
-  padding:10px 5px;
-}
-h1{ color:#e10600; font-size:26px; margin:0; }
-h2{ font-weight:normal; font-size:14px; margin-top:4px; }
+header{text-align:center;padding:10px}
+h1{color:#e10600;font-size:28px;margin:0}
+h2{font-weight:normal;margin-top:3px;font-size:14px}
 
-/* INPUTS */
-input{
-  width:100%;
-  height:44px;
-  font-size:15px;
-  padding:0 12px;
-  border-radius:8px;
-  margin:6px 0;
+/* INPUTS Y BOTONES */
+input, button{
+  padding:6px 12px;
+  font-size:13px;
+  border-radius:5px;
+  margin:4px 2px;
   border:1px solid #e10600;
   background:#111;
   color:#fff;
+  box-sizing:border-box;
 }
-
-/* BOTONES */
-button{
-  width:100%;
-  height:46px;
-  font-size:15px;
-  border-radius:8px;
-  margin:6px 0;
-  border:1px solid #e10600;
-  background:#111;
-  color:#fff;
-  cursor:pointer;
-}
+input{width:100%; max-width:250px;}
+button{min-width:80px; max-width:140px; cursor:pointer;}
 
 /* FICHAS */
 #cards{
-  max-height:320px;
+  max-height:300px;
   overflow-y:auto;
-  margin-bottom:90px;
 }
-
 .card{
-  min-height:74px;
+  height:70px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px;
-  border-radius:8px;
+  padding:6px 10px;
+  border-radius:6px;
   border:1px solid #e10600;
-  margin:6px 0;
-  font-size:14px;
+  margin:4px 0;
+  font-size:13px;
   background:#0b0b0b;
 }
-
 .card-info{
   display:flex;
   flex-direction:column;
+  justify-content:center;
 }
-
 .delete{
+  cursor:pointer;
   color:#e10600;
-  font-size:18px;
   font-weight:bold;
+  margin-left:4px;
 }
 
 /* FOOTER */
 .footer{
   position:fixed;
   bottom:0;
-  left:0;
   width:100%;
   background:#050505;
-  padding:10px;
+  padding:8px;
   text-align:center;
   font-size:12px;
+}
+
+/* ADMIN PANEL */
+#adminPanel{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  max-height:300px;
+  overflow-y:auto;
+  background:#080808;
+  border-top:2px solid #e10600;
+  padding:5px;
+  box-sizing:border-box;
+}
+.admin-card{
+  border:1px solid #333;
+  padding:4px;
+  margin:2px;
+  flex:1 1 140px;
+  border-radius:4px;
+  display:flex;
+  flex-direction:column;
+}
+.admin-card input, .admin-card button{
+  width:auto;
+  margin:2px;
+  padding:3px 6px;
+  font-size:12px;
+}
+
+/* GRAFICA */
+canvas{
+  margin-top:5px;
+  width:100% !important;
+  height:180px !important;
 }
 </style>
 </head>
@@ -115,19 +126,19 @@ button{
 
   <header>
     <h1>Empyre Singles</h1>
-    <h2>Panel principal</h2>
+    <h2>Panel activo</h2>
   </header>
 
-  <input type="text" placeholder="Nombre">
-  <button>Agregar</button>
+  <input type="text" placeholder="Campo de ejemplo">
+  <button>Botón de ejemplo</button>
 
   <div id="cards">
     <div class="card">
       <div class="card-info">
-        <strong>Ejemplo</strong>
-        <span>Contenido de prueba</span>
+        <strong>Visible</strong>
+        <span>Ya no está negro</span>
       </div>
-      <div class="delete">✕</div>
+      <div class="delete">X</div>
     </div>
   </div>
 
