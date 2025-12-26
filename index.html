@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Empyre Singles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#0b0b0b;
+  --card:#141414;
+  --red:#b00020;
+  --border:#300;
+}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);
+  color:#fff;
+}
+.hidden{display:none}
+.center{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.box{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  width:90%;
+  max-width:420px;
+  box-shadow:0 0 30px rgba(176,0,32,.25);
+}
+h1{
+  text-align:center;
+  color:var(--red);
+  letter-spacing:3px;
+  margin-bottom:5px;
+}
+h2{
+  text-align:center;
+  font-weight:300;
+  margin-top:0;
+  opacity:.85;
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:1px solid #400;
+  background:#000;
+  color:#fff;
+  font-size:15px;
+}
+button{
+  background:var(--red);
+  border:none;
+  font-weight:600;
+}
+button.secondary{
+  background:#222;
+}
+header{
+  padding:20px;
+  text-align:center;
+}
+main{
+  max-width:900px;
+  margin:auto;
+  padding:10px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+}
+.ficha{
+  position:relative;
+  border-bottom:1px solid var(--border);
+  padding:12px 0;
+}
+.ficha:last-child{border-bottom:none}
+.delete{
+  position:absolute;
+  top:0;
+  right:0;
+  color:#fff;
+  background:#400;
+  border-radius:50%;
+  width:22px;
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  cursor:pointer;
+}
+.badge{
+  display:inline-block;
+  margin-top:6px;
+  padding:4px 10px;
+  border-radius:20px;
+  background:#200;
+  font-size:12px;
+}
+.admin-btn{
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:#200;
+  padding:10px 14px;
+  border-radius:20px;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ACCESO -->
+<div id="lock" class="center">
+  <div class="box">
+    <h1>EMPYRE SINGLES</h1>
+    <h2>Intercambio candente</h2>
+    <input id="accessInput" placeholder="Clave de acceso">
+    <button onclick="enter()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+<header>
+  <h1>EMPYRE SINGLES</h1>
+  <h2>Intercambio candente</h2>
+</header>
+
+<button class="admin-btn" onclick="openAdmin()">Administración</button>
+
+<main>
+
+<div class="card">
+  <h3>Crear ficha</h3>
+  <input id="userInput" placeholder="@usuario">
+  <input id="fetishInput" placeholder="Fetiche">
+  <button onclick="saveFicha()">Guardar ficha</button>
+</div>
+
+<div class="card">
+  <h3>Fichas</h3>
+  <div id="fichas"></div>
+</div>
+
+</main>
+</div>
+
+<!-- ADMIN -->
+<div id="adminPanel" class="center hidden">
+  <div class="box">
+    <h3>Administración</h3>
+    <select id="adminTarget"></select>
+    <input id="adminCoins" placeholder="Redpoints">
+    <input id="adminPrice" placeholder="Precio fetiche (2 / 4 / 6)">
+    <button onclick="applyAdmin()">Aplicar cambios</button>
+    <button class="secondary" onclick="toggleCoins()">Mostrar / ocultar monedas</button>
+    <input id="newKey" placeholder="Nueva clave acceso">
+    <button onclick="changeKey()">Cambiar clave</button>
+    <button class="secondary" onclick="closeAdmin()">Cerrar</button>
+  </div>
+</div>
+
+<script>
+let ACCESS_KEY = localStorage.getItem("ACCESS_KEY") || "2025";
+const ADMIN_KEY = "0204";
+let showCoins = JSON.parse(localStorage.getItem("SHOW_COINS")) || false;
+let fichas = JSON.parse(localStorage.getItem("FICHAS")) || [];
+
+function enter(){
+  if(accessInput.value === ACCESS_KEY){
+    lock.classList.add("hidden");
+    app.classList.remove("hidden");
+    render();
+  }
+}
+
+function saveFicha(){
+  const u = userInput.value.trim();
+  const f = fetishInput.value.trim();
+  if(!u || !f) return;
+  fichas.push({
+    user:u,
+    fetish:f,
+    coins:10,
+    price:0
+  });
+  userInput.value="";
+  fetishInput.value="";
+  persist();
+}
+
+function deleteFicha(index){
+  if(confirm("¿Eliminar esta ficha?")){
+    fichas.splice(index,1);
+    persist();
+  }
+}
+
+function render(){
+  const cont = document.getElementById("fichas");
+  cont.innerHTML="";
+  fichas.forEach((x,i)=>{
+    cont.innerHTML += `
+      <div class="ficha">
+        <div class="delete" onclick="deleteFicha(${i})">×</div>
+        <strong>${x.user}</strong><br>
+        Fetiche: ${x.fetish}<br>
+        Precio: ${x.price || "—"}<br>
+        <span class="badge">Redpoints: ${showCoins ? x.coins : "??"}</span>
+      </div>
+    `;
+  });
+  renderAdminList();
+}
+
+function persist(){
+  localStorage.setItem("FICHAS", JSON.stringify(fichas));
+  render();
+}
+
+function openAdmin(){
+  const k = prompt("Clave administración");
+  if(k === ADMIN_KEY){
+    adminPanel.classList.remove("hidden");
+  }
+}
+
+function closeAdmin(){
+  adminPanel.classList.add("hidden");
+}
+
+function renderAdminList(){
+  const sel = document.getElementById("adminTarget");
+  sel.innerHTML="";
+  fichas.forEach((f,i)=>{
+    sel.innerHTML += `<option value="${i}">${f.user}</option>`;
+  });
+}
+
+function applyAdmin(){
+  const i = adminTarget.value;
+  if(adminCoins.value){
+    fichas[i].coins = parseInt(adminCoins.value);
+  }
+  if(adminPrice.value){
+    fichas[i].price = parseInt(adminPrice.value);
+  }
+  persist();
+}
+
+function toggleCoins(){
+  showCoins = !showCoins;
+  localStorage.setItem("SHOW_COINS", JSON.stringify(showCoins));
+  render();
+}
+
+function changeKey(){
+  if(newKey.value.length === 4){
+    ACCESS_KEY = newKey.value;
+    localStorage.setItem("ACCESS_KEY", ACCESS_KEY);
+  }
+}
+</script>
+
+</body>
+</html>
