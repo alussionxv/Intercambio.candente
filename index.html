@@ -10,7 +10,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* RESET */
+
+/* RESET SOLO VISUAL */
 *{
   box-sizing:border-box;
 }
@@ -20,7 +21,7 @@ html, body{
   overflow-x:hidden;
 }
 
-/* BODY */
+/* BODY Y CONTENEDOR PRINCIPAL */
 body{
   margin:0;
   background:#000;
@@ -28,7 +29,6 @@ body{
   font-family:Arial, sans-serif;
 }
 
-/* CONTENEDOR */
 .container{
   max-width:420px;
   margin:auto;
@@ -79,16 +79,6 @@ button{
   cursor:pointer;
 }
 
-/* BOTONES EN FILA (si ya los usas) */
-.buttons-row{
-  display:flex;
-  gap:8px;
-}
-
-.buttons-row button{
-  flex:1;
-}
-
 /* FICHAS */
 #cards{
   max-height:320px;
@@ -112,11 +102,13 @@ button{
 .card-info{
   display:flex;
   flex-direction:column;
+  justify-content:center;
 }
 
 .delete{
   cursor:pointer;
   color:#e10600;
+  font-weight:bold;
   font-size:18px;
   padding-left:8px;
 }
@@ -152,6 +144,8 @@ button{
   padding:6px;
   margin:4px 0;
   border-radius:6px;
+  display:flex;
+  flex-direction:column;
 }
 
 .admin-card input,
@@ -166,7 +160,9 @@ button{
 canvas{
   width:100% !important;
   height:200px !important;
+  margin-top:8px;
 }
+
 </style>
 </head>
 
