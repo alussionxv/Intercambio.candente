@@ -14,16 +14,19 @@ body{margin:0;background:#000;color:#fff;font-family:Arial}
 header{text-align:center;padding:20px}
 h1{color:#e10600;font-size:42px;margin:0}
 h2{font-weight:normal;margin-top:5px}
-.container{max-width:900px;margin:auto;padding:10px}
+.container{max-width:500px;margin:auto;padding:10px}
 input,button{
- width:100%;padding:8px;margin:5px 0;
- background:#111;border:1px solid #e10600;color:#fff
+ width:90%;max-width:250px;padding:8px;margin:5px auto;
+ display:block;background:#111;border:1px solid #e10600;color:#fff;
+ border-radius:5px;
 }
 button{cursor:pointer}
 .card{
  border:1px solid #e10600;
  padding:10px;margin:10px 0;
- background:#0b0b0b;position:relative
+ background:#0b0b0b;position:relative;
+ border-radius:5px;
+ word-break:break-word;
 }
 .delete{
  position:absolute;top:5px;right:8px;
@@ -34,10 +37,17 @@ button{cursor:pointer}
  background:#050505;padding:10px;text-align:center
 }
 #adminPanel{
- background:#080808;border-top:2px solid #e10600;padding:10px
+ background:#080808;border-top:2px solid #e10600;padding:10px;
+ position:fixed;top:0;left:0;width:100%;height:100%;
+ overflow-y:auto;box-sizing:border-box;display:none;
+ z-index:1000;
 }
+#adminPanel button, #adminPanel input{
+ max-width:250px;width:90%;margin:5px auto;display:block;
+}
+#adminPanel button:first-of-type{position:sticky;top:10px;}
 .admin-card{
- border:1px solid #333;padding:10px;margin:10px 0
+ border:1px solid #333;padding:10px;margin:10px 0;border-radius:5px
 }
 canvas{margin-top:20px}
 </style>
@@ -78,7 +88,7 @@ canvas{margin-top:20px}
  <button onclick="openAdmin()">Administración</button>
 </div>
 
-<div id="adminPanel" class="hidden">
+<div id="adminPanel">
  <h3>Administración</h3>
  <input type="password" id="adminPin" placeholder="PIN admin">
  <button onclick="loginAdmin()">Entrar</button>
@@ -91,8 +101,6 @@ canvas{margin-top:20px}
   <h4>Editar fichas</h4>
   <div id="adminList"></div>
  </div>
-</div>
-
 </div>
 
 <script>
@@ -126,7 +134,7 @@ function enter(){
 }
 
 function openAdmin(){
- adminPanel.classList.remove("hidden");
+ adminPanel.style.display="block";
 }
 
 function loginAdmin(){
@@ -138,7 +146,7 @@ function loginAdmin(){
 
 function closeAdmin(){
  isAdmin=false;
- adminPanel.classList.add("hidden");
+ adminPanel.style.display="none";
  adminContent.classList.add("hidden");
  adminPin.value="";
 }
