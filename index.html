@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>Empyre Singles</title>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body{margin:0;background:#000;color:#fff;font-family:Arial}
 .hidden{display:none}
@@ -13,18 +15,34 @@ header{text-align:center;padding:20px}
 h1{color:#e10600;font-size:42px;margin:0}
 h2{font-weight:normal;margin-top:5px}
 .container{max-width:900px;margin:auto;padding:10px}
-input,button{width:100%;padding:8px;margin:5px 0;background:#111;border:1px solid #e10600;color:#fff}
+input,button{
+ width:100%;padding:8px;margin:5px 0;
+ background:#111;border:1px solid #e10600;color:#fff
+}
 button{cursor:pointer}
-#cards{max-height:400px;overflow-y:auto}
-#adminList{max-height:400px;overflow-y:auto}
-.card{border:1px solid #e10600;padding:10px;margin:10px 0;background:#0b0b0b;position:relative}
-.delete{position:absolute;top:5px;right:8px;cursor:pointer;color:#e10600;font-weight:bold}
-.footer{position:fixed;bottom:0;width:100%;background:#050505;padding:10px;text-align:center}
-#adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:400px;overflow-y:auto}
-.admin-card{border:1px solid #333;padding:10px;margin:10px 0}
+.card{
+ border:1px solid #e10600;
+ padding:10px;margin:10px 0;
+ background:#0b0b0b;position:relative
+}
+.delete{
+ position:absolute;top:5px;right:8px;
+ cursor:pointer;color:#e10600;font-weight:bold
+}
+.footer{
+ position:fixed;bottom:0;width:100%;
+ background:#050505;padding:10px;text-align:center
+}
+#adminPanel{
+ background:#080808;border-top:2px solid #e10600;padding:10px
+}
+.admin-card{
+ border:1px solid #333;padding:10px;margin:10px 0
+}
 canvas{margin-top:20px}
 </style>
 </head>
+
 <body>
 
 <!-- ACCESO -->
@@ -36,12 +54,14 @@ canvas{margin-top:20px}
 
 <!-- APP -->
 <div id="app" class="hidden">
+
 <header>
  <h1>Empyre Singles</h1>
  <h2>Intercambio candente</h2>
 </header>
 
 <div class="container">
+
 <h3>Crear ficha</h3>
 <input id="userInput" placeholder="@usuario">
 <input id="fetishInput" placeholder="Fetiche">
@@ -49,7 +69,9 @@ canvas{margin-top:20px}
 <button onclick="createCard()">Crear</button>
 
 <div id="cards"></div>
+
 <canvas id="chart"></canvas>
+
 </div>
 
 <div class="footer">
@@ -60,13 +82,17 @@ canvas{margin-top:20px}
  <h3>Administración</h3>
  <input type="password" id="adminPin" placeholder="PIN admin">
  <button onclick="loginAdmin()">Entrar</button>
+
  <div id="adminContent" class="hidden">
   <button onclick="toggleCoins()">Mostrar / Ocultar monedas</button>
   <button onclick="resetGame()">Cerrar juego</button>
   <button onclick="closeAdmin()">X</button>
+
   <h4>Editar fichas</h4>
   <div id="adminList"></div>
  </div>
+</div>
+
 </div>
 
 <script>
@@ -80,16 +106,18 @@ const firebaseConfig={
 };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
+
 const stateRef=db.collection("state").doc("game");
 
 stateRef.get().then(d=>{
- if(!d.exists){stateRef.set({showCoins:false});}
+ if(!d.exists){
+  stateRef.set({ showCoins:false });
+ }
 });
 
 let isAdmin=false;
 let chart;
 
-// ACCESO
 function enter(){
  if(accessPin.value==="2025"){
   access.classList.add("hidden");
@@ -97,15 +125,17 @@ function enter(){
  }
 }
 
-// ADMIN
-function openAdmin(){adminPanel.classList.remove("hidden");}
+function openAdmin(){
+ adminPanel.classList.remove("hidden");
+}
+
 function loginAdmin(){
  if(adminPin.value==="0204"){
   isAdmin=true;
   adminContent.classList.remove("hidden");
-  renderCards();
  }
 }
+
 function closeAdmin(){
  isAdmin=false;
  adminPanel.classList.add("hidden");
@@ -113,7 +143,6 @@ function closeAdmin(){
  adminPin.value="";
 }
 
-// CREAR FICHA
 function createCard(){
  if(!userInput.value||!fetishInput.value)return;
  db.collection("cards").add({
@@ -126,31 +155,68 @@ function createCard(){
  fetishInput.value="";
 }
 
-// TOGGLE MONEDAS
 function toggleCoins(){
  stateRef.get().then(d=>{
-  stateRef.update({showCoins:!d.data().showCoins});
+  stateRef.update({ showCoins:!d.data().showCoins });
  });
 }
 
-// RESET
 function resetGame(){
  if(confirm("¿Cerrar juego y borrar todo?")){
   db.collection("cards").get().then(s=>{
    s.forEach(d=>d.ref.delete());
   });
-  stateRef.set({showCoins:false});
+  stateRef.set({ showCoins:false });
  }
 }
 
-// BORRAR FICHA
 function deleteCard(id){
  if(confirm("¿Borrar ficha?")){
   db.collection("cards").doc(id).delete();
  }
 }
 
-// GUARDAR CAMBIOS ADMIN
+db.collection("cards").onSnapshot(s=>{
+ stateRef.get().then(st=>{
+  const visible=st.data().showCoins;
+
+  cards.innerHTML="";
+  adminList.innerHTML="";
+  const graph=[];
+
+  s.forEach(d=>{
+   const c=d.data();
+
+   const div=document.createElement("div");
+   div.className="card";
+   div.innerHTML=`
+    <span class="delete" onclick="deleteCard('${d.id}')">X</span>
+    <b>${c.user}</b><br>
+    ${c.fetish}<br>
+    Redpoints: ${visible ? c.coins : "??"}<br>
+    Precio: ${c.price}
+   `;
+   cards.appendChild(div);
+
+   if(isAdmin){
+    const a=document.createElement("div");
+    a.className="admin-card";
+    a.innerHTML=`
+     <b>${c.user}</b><br>
+     <input type="number" id="coins-${d.id}" value="${c.coins}">
+     <input type="number" id="price-${d.id}" value="${c.price}">
+     <button onclick="save('${d.id}')">Guardar</button>
+    `;
+    adminList.appendChild(a);
+   }
+
+   graph.push({u:c.user,c:c.coins});
+  });
+
+  updateChart(graph);
+ });
+});
+
 function save(id){
  const coins=document.getElementById("coins-"+id).value;
  const price=document.getElementById("price-"+id).value;
@@ -160,71 +226,22 @@ function save(id){
  });
 }
 
-// RENDER CARDS
-function renderCards(){
- db.collection("cards").get().then(s=>{
-  stateRef.get().then(st=>{
-   const visible=st.data().showCoins;
-   cards.innerHTML="";
-   adminList.innerHTML="";
-   const graph=[];
-   s.forEach(d=>{
-    const c=d.data();
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
-     <span class="delete" data-id="${d.id}">X</span>
-     <b>${c.user}</b><br>
-     ${c.fetish}<br>
-     Redpoints: ${visible?c.coins:"??"}<br>
-     Precio: ${c.price}
-    `;
-    cards.appendChild(div);
-
-    if(isAdmin){
-     const a=document.createElement("div");
-     a.className="admin-card";
-     a.innerHTML=`
-      <b>${c.user}</b><br>
-      <input type="number" id="coins-${d.id}" value="${c.coins}">
-      <input type="number" id="price-${d.id}" value="${c.price}">
-      <button onclick="save('${d.id}')">Guardar</button>
-     `;
-     adminList.appendChild(a);
-    }
-
-    graph.push({u:c.user,c:c.coins});
-   });
-
-   updateChart(graph);
-  });
- });
-}
-
-// EVENT DELEGATION PARA X
-cards.addEventListener('click', e=>{
- if(e.target.classList.contains('delete')){
-   const id=e.target.dataset.id;
-   deleteCard(id);
- }
-});
-
-// LISTENERS EN TIEMPO REAL
-db.collection("cards").onSnapshot(renderCards);
-stateRef.onSnapshot(renderCards);
-
-// GRAFICA
 function updateChart(data){
  if(chart)chart.destroy();
  chart=new Chart(document.getElementById("chart"),{
   type:"line",
   data:{
    labels:data.map(d=>d.u),
-   datasets:[{data:data.map(d=>d.c),borderColor:"#e10600",fill:false}]
+   datasets:[{
+    data:data.map(d=>d.c),
+    borderColor:"#e10600",
+    fill:false
+   }]
   },
   options:{plugins:{legend:{display:false}}}
  });
 }
 </script>
+
 </body>
 </html>
