@@ -15,10 +15,12 @@ h2{font-weight:normal;margin-top:5px}
 .container{max-width:900px;margin:auto;padding:10px}
 input,button{width:100%;padding:8px;margin:5px 0;background:#111;border:1px solid #e10600;color:#fff}
 button{cursor:pointer}
+#cards{max-height:400px;overflow-y:auto}
+#adminList{max-height:400px;overflow-y:auto}
 .card{border:1px solid #e10600;padding:10px;margin:10px 0;background:#0b0b0b;position:relative}
 .delete{position:absolute;top:5px;right:8px;cursor:pointer;color:#e10600;font-weight:bold}
 .footer{position:fixed;bottom:0;width:100%;background:#050505;padding:10px;text-align:center}
-#adminPanel{background:#080808;border-top:2px solid #e10600;padding:10px}
+#adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:400px;overflow-y:auto}
 .admin-card{border:1px solid #333;padding:10px;margin:10px 0}
 canvas{margin-top:20px}
 </style>
@@ -47,7 +49,6 @@ canvas{margin-top:20px}
 <button onclick="createCard()">Crear</button>
 
 <div id="cards"></div>
-
 <canvas id="chart"></canvas>
 </div>
 
@@ -81,7 +82,6 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const stateRef=db.collection("state").doc("game");
 
-// Inicializar showCoins si no existe
 stateRef.get().then(d=>{
  if(!d.exists){stateRef.set({showCoins:false});}
 });
@@ -173,7 +173,7 @@ function renderCards(){
     const div=document.createElement("div");
     div.className="card";
     div.innerHTML=`
-     <span class="delete" onclick="deleteCard('${d.id}')">X</span>
+     <span class="delete" data-id="${d.id}">X</span>
      <b>${c.user}</b><br>
      ${c.fetish}<br>
      Redpoints: ${visible?c.coins:"??"}<br>
@@ -200,6 +200,14 @@ function renderCards(){
   });
  });
 }
+
+// EVENT DELEGATION PARA X
+cards.addEventListener('click', e=>{
+ if(e.target.classList.contains('delete')){
+   const id=e.target.dataset.id;
+   deleteCard(id);
+ }
+});
 
 // LISTENERS EN TIEMPO REAL
 db.collection("cards").onSnapshot(renderCards);
