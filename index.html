@@ -7,7 +7,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-/* BODY Y CONTENEDOR PRINCIPAL */
 body{
   margin:0;
   padding:0;
@@ -18,19 +17,10 @@ body{
   min-width:320px;
   overflow-x:hidden;
 }
-.container{
-  max-width:400px;
-  margin:auto;
-  padding:10px;
-  box-sizing:border-box;
-}
-
-/* HEADER */
+.container{max-width:400px;margin:auto;padding:10px;box-sizing:border-box;}
 header{text-align:center;padding:10px;}
 h1{color:#e10600;font-size:28px;margin:0;}
 h2{font-weight:normal;margin-top:3px;font-size:14px;}
-
-/* INPUTS Y BOTONES */
 input, button{
   padding:6px 12px;
   font-size:13px;
@@ -43,122 +33,83 @@ input, button{
 }
 input{width:100%; max-width:250px;}
 button{min-width:80px; max-width:140px; cursor:pointer;}
-
-/* FICHAS */
-#cards{
-  max-height:300px;
-  overflow-y:auto;
-}
-.card{
-  height:70px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:6px 10px;
-  border-radius:6px;
-  border:1px solid #e10600;
-  margin:4px 0;
-  font-size:13px;
-  background:#0b0b0b;
-  box-sizing:border-box;
-}
+#cards{max-height:300px;overflow-y:auto;}
+.card{height:70px;display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;border:1px solid #e10600;margin:4px 0;font-size:13px;background:#0b0b0b;box-sizing:border-box;}
 .card-info{display:flex;flex-direction:column;justify-content:center;}
-.delete{cursor:pointer;color:#e10600;font-weight:bold;margin-left:4px}
-
-/* FOOTER */
-.footer{
-  position:fixed;
-  bottom:0;
-  width:100%;
-  background:#050505;
-  padding:8px;
-  text-align:center;
-  font-size:12px;
-}
-
-/* ADMIN PANEL COMO MODAL */
-#adminPanel{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.95);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  overflow-y:auto;
-  padding:10px;
-  box-sizing:border-box;
-}
-#adminContent{
-  width:100%;
-  max-width:380px;
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-  display:flex;
-  flex-direction:column;
-}
+.delete{cursor:pointer;color:#e10600;font-weight:bold;margin-left:4px;}
+.footer{position:fixed;bottom:0;width:100%;background:#050505;padding:8px;text-align:center;font-size:12px;}
+#adminPanel{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;justify-content:center;align-items:center;flex-direction:column;overflow-y:auto;padding:10px;box-sizing:border-box;display:none;}
+#adminContent{width:100%;max-width:380px;background:#111;padding:10px;border-radius:8px;display:flex;flex-direction:column;}
 #adminContent h3,h4{margin:5px 0;}
-.admin-card{
-  border:1px solid #333;
-  padding:4px;
-  margin:2px;
-  border-radius:4px;
-  display:flex;
-  flex-direction:column;
-}
-.admin-card input, .admin-card button{
-  width:auto;
-  margin:2px;
-  padding:3px 6px;
-  font-size:12px;
-}
-
-/* GRAFICA */
-canvas{
-  margin-top:5px;
-  width:100% !important;
-  height:180px !important;
-}
+.admin-card{border:1px solid #333;padding:4px;margin:2px;border-radius:4px;display:flex;flex-direction:column;}
+.admin-card input, .admin-card button{width:auto;margin:2px;padding:3px 6px;font-size:12px;}
+canvas{margin-top:5px;width:100% !important;height:180px !important;}
 </style>
 </head>
 <body>
 
-<!-- ACCESO -->
 <div id="access" class="container">
  <h2>Clave de acceso</h2>
  <input type="password" id="accessPin" placeholder="Introduce clave">
  <button onclick="enter()">Entrar</button>
 </div>
 
-<!-- APP -->
-<div id="app" class="hidden">
+<script>
+let accessPassword="2025";
+let adminPassword="0204";
+let isAdmin=false;
+let appContainer=null;
+let adminPanel=null;
+let chart=null;
+
+// Firebase
+firebase.initializeApp({
+ apiKey:"AIzaSyAFbvgQ90F3LK6bdjIV9ZrklqG7AOa_SP8",
+ authDomain:"empyre-singles-4d9e5.firebaseapp.com",
+ projectId:"empyre-singles-4d9e5"
+});
+const db=firebase.firestore();
+const stateRef=db.collection("state").doc("game");
+stateRef.get().then(d=>{if(!d.exists){stateRef.set({showCoins:false});}});
+
+// ACCESO
+function enter(){
+  const pin=document.getElementById("accessPin").value;
+  if(pin===accessPassword){
+    document.getElementById("access").remove();
+    renderApp();
+  } else alert("Clave incorrecta");
+}
+
+// RENDER APP DINÁMICO
+function renderApp(){
+  appContainer=document.createElement("div");
+  appContainer.id="app";
+  appContainer.innerHTML=`
 <header>
  <h1>Empyre Singles</h1>
  <h2>Intercambio candente</h2>
 </header>
-
 <div class="container">
 <h3>Crear ficha</h3>
 <input id="userInput" placeholder="@usuario">
 <input id="fetishInput" placeholder="Fetiche">
 <p>Redpoints: ??</p>
 <button onclick="createCard()">Crear</button>
-
 <div id="cards"></div>
 <canvas id="chart"></canvas>
 </div>
-
 <div class="footer">
  <button onclick="openAdmin()">Administración</button>
 </div>
+`;
+  document.body.appendChild(appContainer);
 
-<!-- ADMIN PANEL COMO MODAL -->
-<div id="adminPanel">
- <div id="adminContent">
+  // ADMIN PANEL
+  adminPanel=document.createElement("div");
+  adminPanel.id="adminPanel";
+  adminPanel.innerHTML=`
+<div id="adminContent">
   <button style="align-self:flex-end;" onclick="closeAdmin()">X</button>
   <h3>Administración</h3>
   <input type="password" id="adminPin" placeholder="PIN admin">
@@ -169,156 +120,84 @@ canvas{
   <h4>Cambiar contraseña de acceso</h4>
   <input type="password" id="newAccessPin" placeholder="Nueva clave de acceso">
   <button onclick="changeAccessPin()">Guardar clave</button>
- </div>
 </div>
+`;
+  document.body.appendChild(adminPanel);
 
-<script>
-let accessPassword="2025";
-let adminPassword="0204";
-firebase.initializeApp({
- apiKey:"AIzaSyAFbvgQ90F3LK6bdjIV9ZrklqG7AOa_SP8",
- authDomain:"empyre-singles-4d9e5.firebaseapp.com",
- projectId:"empyre-singles-4d9e5"
-});
-const db=firebase.firestore();
-const stateRef=db.collection("state").doc("game");
-stateRef.get().then(d=>{if(!d.exists){stateRef.set({showCoins:false});}});
-let isAdmin=false;
-let chart;
-
-// ACCESO
-function enter(){
- if(accessPin.value===accessPassword){
-  access.classList.add("hidden");
-  app.classList.remove("hidden");
- } else { alert("Clave incorrecta"); }
+  // Listeners y render inicial
+  db.collection("cards").onSnapshot(renderCards);
+  stateRef.onSnapshot(renderCards);
 }
+
+// FUNCIONES CREAR, BORRAR, TOGGLE, RESET, ADMIN ETC.
+function createCard(){
+  const u=document.getElementById("userInput").value;
+  const f=document.getElementById("fetishInput").value;
+  if(!u||!f)return;
+  db.collection("cards").add({user:u,fetish:f,coins:10,price:0});
+  document.getElementById("userInput").value="";
+  document.getElementById("fetishInput").value="";
+}
+function deleteCard(id){if(confirm("¿Borrar ficha?")) db.collection("cards").doc(id).delete();}
+function toggleCoins(){stateRef.get().then(d=>stateRef.update({showCoins:!d.data().showCoins}));}
+function resetGame(){if(confirm("¿Cerrar juego y borrar todo?")){db.collection("cards").get().then(s=>s.forEach(d=>d.ref.delete()));stateRef.set({showCoins:false});}}
+function changeAccessPin(){const n=document.getElementById("newAccessPin").value;if(n){accessPassword=n;alert("Clave de acceso cambiada!");document.getElementById("newAccessPin").value="";}}
 
 // ADMIN
 function openAdmin(){adminPanel.style.display="flex";}
+function closeAdmin(){isAdmin=false;adminPanel.style.display="none";document.getElementById("adminList").classList.add("hidden");document.getElementById("adminPin").value="";}
 function loginAdmin(){
- if(adminPin.value===adminPassword){
-  isAdmin=true;
-  adminList.classList.remove("hidden");
-  renderCards();
- } else alert("PIN incorrecto");
+  if(document.getElementById("adminPin").value===adminPassword){
+    isAdmin=true;
+    document.getElementById("adminList").classList.remove("hidden");
+    renderCards();
+  } else alert("PIN incorrecto");
 }
-function closeAdmin(){isAdmin=false; adminPanel.style.display="none"; adminList.classList.add("hidden"); adminPin.value="";}
-
-// CREAR FICHA
-function createCard(){
- if(!userInput.value||!fetishInput.value)return;
- db.collection("cards").add({
-  user:userInput.value,
-  fetish:fetishInput.value,
-  coins:10,
-  price:0
- });
- userInput.value="";
- fetishInput.value="";
-}
-
-// TOGGLE MONEDAS
-function toggleCoins(){stateRef.get().then(d=>{stateRef.update({showCoins:!d.data().showCoins});});}
-
-// RESET
-function resetGame(){
- if(confirm("¿Cerrar juego y borrar todo?")){
-  db.collection("cards").get().then(s=>{s.forEach(d=>d.ref.delete());});
-  stateRef.set({showCoins:false});
- }
-}
-
-// BORRAR FICHA
-function deleteCard(id){
- if(confirm("¿Borrar ficha?")){db.collection("cards").doc(id).delete();}
-}
-
-// GUARDAR CAMBIOS ADMIN
 function save(id){
  const coins=document.getElementById("coins-"+id).value;
  const price=document.getElementById("price-"+id).value;
- db.collection("cards").doc(id).update({
-  coins:Number(coins),
-  price:Number(price)
- });
+ db.collection("cards").doc(id).update({coins:Number(coins),price:Number(price)});
 }
 
-// CAMBIAR CLAVE DE ACCESO
-function changeAccessPin(){
- if(newAccessPin.value){
-  accessPassword=newAccessPin.value;
-  alert("Clave de acceso cambiada!");
-  newAccessPin.value="";
- }
-}
-
-// RENDER CARDS
+// RENDER FICHAS Y GRAFICA
 function renderCards(){
- db.collection("cards").get().then(s=>{
-  stateRef.get().then(st=>{
-   const visible=st.data().showCoins;
-   cards.innerHTML="";
-   adminList.innerHTML="";
-   const graph=[];
-   s.forEach(d=>{
-    const c=d.data();
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
-     <div class="card-info">
-      <b>${c.user}</b> | ${c.fetish} <br>
-      Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
-     </div>
-     <span class="delete" data-id="${d.id}">X</span>
-    `;
-    cards.appendChild(div);
+  db.collection("cards").get().then(s=>{
+    stateRef.get().then(st=>{
+      const visible=st.data().showCoins;
+      const cardsDiv=document.getElementById("cards");
+      const adminList=document.getElementById("adminList");
+      cardsDiv.innerHTML="";
+      if(isAdmin) adminList.innerHTML="";
+      const graph=[];
+      s.forEach(d=>{
+        const c=d.data();
+        const div=document.createElement("div");
+        div.className="card";
+        div.innerHTML=`<div class="card-info"><b>${c.user}</b> | ${c.fetish} <br>Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}</div><span class="delete" data-id="${d.id}">X</span>`;
+        cardsDiv.appendChild(div);
 
-    // ALERTA DE GANADOR 20 Redpoints
-    if(c.coins>=20 && !c.alerted){
-      alert(`${c.user} alcanzó 20 Redpoints! Toma captura y comparte en el grupo.`);
-      db.collection("cards").doc(d.id).update({alerted:true});
-    }
+        if(c.coins>=20 && !c.alerted){
+          alert(`${c.user} alcanzó 20 Redpoints! Toma captura y comparte en el grupo.`);
+          db.collection("cards").doc(d.id).update({alerted:true});
+        }
 
-    if(isAdmin){
-     const a=document.createElement("div");
-     a.className="admin-card";
-     a.innerHTML=`
-      <b>${c.user}</b><br>
-      Coins: <input type="number" id="coins-${d.id}" value="${c.coins}">
-      Precio: <input type="number" id="price-${d.id}" value="${c.price}">
-      <button onclick="save('${d.id}')">Guardar</button>
-     `;
-     adminList.appendChild(a);
-    }
+        if(isAdmin){
+          const a=document.createElement("div");
+          a.className="admin-card";
+          a.innerHTML=`<b>${c.user}</b><br>Coins: <input type="number" id="coins-${d.id}" value="${c.coins}"> Precio: <input type="number" id="price-${d.id}" value="${c.price}"> <button onclick="save('${d.id}')">Guardar</button>`;
+          adminList.appendChild(a);
+        }
+        graph.push({u:c.user,c:c.coins});
+      });
 
-    graph.push({u:c.user,c:c.coins});
-   });
-
-   updateChart(graph);
+      if(chart) chart.destroy();
+      chart=new Chart(document.getElementById("chart"),{type:"line",data:{labels:graph.map(d=>d.u),datasets:[{data:graph.map(d=>d.c),borderColor:"#e10600",fill:false}]},options:{plugins:{legend:{display:false}}}});
+    });
   });
- });
 }
 
-// EVENT DELEGATION PARA X
-cards.addEventListener('click', e=>{if(e.target.classList.contains('delete')){deleteCard(e.target.dataset.id);}});
-
-// LISTENERS EN TIEMPO REAL
-db.collection("cards").onSnapshot(renderCards);
-stateRef.onSnapshot(renderCards);
-
-// GRAFICA
-function updateChart(data){
- if(chart)chart.destroy();
- chart=new Chart(document.getElementById("chart"),{
-  type:"line",
-  data:{
-   labels:data.map(d=>d.u),
-   datasets:[{data:data.map(d=>d.c),borderColor:"#e10600",fill:false}]
-  },
-  options:{plugins:{legend:{display:false}}}
- });
-}
+// EVENT DELEGATION BORRAR
+document.addEventListener('click',e=>{if(e.target.classList.contains('delete')) deleteCard(e.target.dataset.id);});
 </script>
 </body>
 </html>
