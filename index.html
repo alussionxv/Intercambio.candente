@@ -13,15 +13,15 @@ header{text-align:center;padding:20px}
 h1{color:#e10600;font-size:42px;margin:0}
 h2{font-weight:normal;margin-top:5px}
 .container{max-width:900px;margin:auto;padding:10px}
-input,button{width:100%;padding:8px;margin:5px 0;background:#111;border:1px solid #e10600;color:#fff}
+input,button{width:100%;padding:6px;margin:4px 0;background:#111;border:1px solid #e10600;color:#fff}
 button{cursor:pointer}
-#cards{max-height:400px;overflow-y:auto}
-#adminList{max-height:400px;overflow-y:auto}
-.card{border:1px solid #e10600;padding:10px;margin:10px 0;background:#0b0b0b;position:relative}
-.delete{position:absolute;top:5px;right:8px;cursor:pointer;color:#e10600;font-weight:bold}
+#cards{max-height:350px;overflow-y:auto}
+#adminList{max-height:350px;overflow-y:auto}
+.card{border:1px solid #e10600;padding:6px;margin:6px 0;background:#0b0b0b;position:relative;font-size:14px}
+.delete{position:absolute;top:3px;right:5px;cursor:pointer;color:#e10600;font-weight:bold}
 .footer{position:fixed;bottom:0;width:100%;background:#050505;padding:10px;text-align:center}
 #adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:400px;overflow-y:auto}
-.admin-card{border:1px solid #333;padding:10px;margin:10px 0}
+.admin-card{border:1px solid #333;padding:6px;margin:6px 0;font-size:14px}
 canvas{margin-top:20px}
 </style>
 </head>
@@ -30,7 +30,7 @@ canvas{margin-top:20px}
 <!-- ACCESO -->
 <div id="access" class="container">
  <h2>Clave de acceso</h2>
- <input type="password" id="accessPin" placeholder="2025">
+ <input type="password" id="accessPin" placeholder="Introduce clave">
  <button onclick="enter()">Entrar</button>
 </div>
 
@@ -174,10 +174,7 @@ function renderCards(){
     div.className="card";
     div.innerHTML=`
      <span class="delete" data-id="${d.id}">X</span>
-     <b>${c.user}</b><br>
-     ${c.fetish}<br>
-     Redpoints: ${visible?c.coins:"??"}<br>
-     Precio: ${c.price}
+     <b>${c.user}</b> | ${c.fetish} | Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
     `;
     cards.appendChild(div);
 
@@ -186,8 +183,8 @@ function renderCards(){
      a.className="admin-card";
      a.innerHTML=`
       <b>${c.user}</b><br>
-      <input type="number" id="coins-${d.id}" value="${c.coins}">
-      <input type="number" id="price-${d.id}" value="${c.price}">
+      Coins: <input type="number" id="coins-${d.id}" value="${c.coins}" style="width:60px">
+      Precio: <input type="number" id="price-${d.id}" value="${c.price}" style="width:60px">
       <button onclick="save('${d.id}')">Guardar</button>
      `;
      adminList.appendChild(a);
