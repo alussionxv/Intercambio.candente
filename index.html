@@ -9,63 +9,35 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
- margin:0;
- background:#000;
- color:#fff;
- font-family:Arial,Helvetica,sans-serif;
-}
+body{margin:0;background:#000;color:#fff;font-family:Arial}
 .hidden{display:none}
 header{text-align:center;padding:20px}
 h1{color:#e10600;font-size:42px;margin:0}
 h2{font-weight:normal;margin-top:5px}
-
 .container{max-width:900px;margin:auto;padding:10px}
 input,button{
- width:100%;
- padding:8px;
- margin:5px 0;
- background:#111;
- border:1px solid #e10600;
- color:#fff;
+ width:100%;padding:8px;margin:5px 0;
+ background:#111;border:1px solid #e10600;color:#fff
 }
 button{cursor:pointer}
-
 .card{
  border:1px solid #e10600;
- padding:10px;
- margin:10px 0;
- background:#0b0b0b;
- position:relative;
+ padding:10px;margin:10px 0;
+ background:#0b0b0b;position:relative
 }
 .delete{
- position:absolute;
- top:5px;
- right:8px;
- cursor:pointer;
- color:#e10600;
- font-weight:bold;
+ position:absolute;top:5px;right:8px;
+ cursor:pointer;color:#e10600;font-weight:bold
 }
-
 .footer{
- position:fixed;
- bottom:0;
- width:100%;
- background:#050505;
- padding:10px;
- text-align:center;
+ position:fixed;bottom:0;width:100%;
+ background:#050505;padding:10px;text-align:center
 }
-
 #adminPanel{
- background:#080808;
- border-top:2px solid #e10600;
- padding:10px;
+ background:#080808;border-top:2px solid #e10600;padding:10px
 }
-
 .admin-card{
- border:1px solid #333;
- padding:10px;
- margin:10px 0;
+ border:1px solid #333;padding:10px;margin:10px 0
 }
 canvas{margin-top:20px}
 </style>
@@ -108,7 +80,6 @@ canvas{margin-top:20px}
 
 <div id="adminPanel" class="hidden">
  <h3>Administración</h3>
-
  <input type="password" id="adminPin" placeholder="PIN admin">
  <button onclick="loginAdmin()">Entrar</button>
 
@@ -136,8 +107,15 @@ const firebaseConfig={
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
+const stateRef=db.collection("state").doc("game");
+
+stateRef.get().then(d=>{
+ if(!d.exists){
+  stateRef.set({ showCoins:false });
+ }
+});
+
 let isAdmin=false;
-let showCoins=false;
 let chart;
 
 function enter(){
@@ -178,7 +156,9 @@ function createCard(){
 }
 
 function toggleCoins(){
- showCoins=!showCoins;
+ stateRef.get().then(d=>{
+  stateRef.update({ showCoins:!d.data().showCoins });
+ });
 }
 
 function resetGame(){
@@ -186,7 +166,7 @@ function resetGame(){
   db.collection("cards").get().then(s=>{
    s.forEach(d=>d.ref.delete());
   });
-  showCoins=false;
+  stateRef.set({ showCoins:false });
  }
 }
 
@@ -197,42 +177,44 @@ function deleteCard(id){
 }
 
 db.collection("cards").onSnapshot(s=>{
- cards.innerHTML="";
- adminList.innerHTML="";
- const graph=[];
+ stateRef.get().then(st=>{
+  const visible=st.data().showCoins;
 
- s.forEach(d=>{
-  const c=d.data();
+  cards.innerHTML="";
+  adminList.innerHTML="";
+  const graph=[];
 
-  // PUBLIC CARD
-  const div=document.createElement("div");
-  div.className="card";
-  div.innerHTML=`
-   <span class="delete" onclick="deleteCard('${d.id}')">X</span>
-   <b>${c.user}</b><br>
-   ${c.fetish}<br>
-   Redpoints: ${showCoins?c.coins:"??"}<br>
-   Precio: ${c.price}
-  `;
-  cards.appendChild(div);
+  s.forEach(d=>{
+   const c=d.data();
 
-  // ADMIN CARD
-  if(isAdmin){
-   const a=document.createElement("div");
-   a.className="admin-card";
-   a.innerHTML=`
+   const div=document.createElement("div");
+   div.className="card";
+   div.innerHTML=`
+    <span class="delete" onclick="deleteCard('${d.id}')">X</span>
     <b>${c.user}</b><br>
-    <input type="number" placeholder="Redpoints" value="${c.coins}" id="coins-${d.id}">
-    <input type="number" placeholder="Precio" value="${c.price}" id="price-${d.id}">
-    <button onclick="save('${d.id}')">Guardar</button>
+    ${c.fetish}<br>
+    Redpoints: ${visible ? c.coins : "??"}<br>
+    Precio: ${c.price}
    `;
-   adminList.appendChild(a);
-  }
+   cards.appendChild(div);
 
-  graph.push({u:c.user,c:c.coins});
+   if(isAdmin){
+    const a=document.createElement("div");
+    a.className="admin-card";
+    a.innerHTML=`
+     <b>${c.user}</b><br>
+     <input type="number" id="coins-${d.id}" value="${c.coins}">
+     <input type="number" id="price-${d.id}" value="${c.price}">
+     <button onclick="save('${d.id}')">Guardar</button>
+    `;
+    adminList.appendChild(a);
+   }
+
+   graph.push({u:c.user,c:c.coins});
+  });
+
+  updateChart(graph);
  });
-
- updateChart(graph);
 });
 
 function save(id){
