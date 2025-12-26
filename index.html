@@ -3,196 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <title>Empyre Singles</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#000;color:#fff}
+body{
+ background:#000;
+ color:#fff;
+ font-family:Arial,Helvetica,sans-serif;
+ margin:0;
+}
 .hidden{display:none}
-button,input,select{padding:10px;border-radius:6px;border:none}
-button{background:#b00020;color:#fff;cursor:pointer}
-button:hover{opacity:.9}
-header{text-align:center;padding:20px}
-h1{color:#b00020;margin:0}
-h2{font-size:14px;font-weight:normal;opacity:.8}
-
-#lock{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
-
-#form{max-width:320px;margin:20px auto;display:flex;flex-direction:column;gap:10px}
-
-#cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;padding:20px}
-
-.card{background:#111;border:1px solid #b00020;border-radius:10px;padding:15px;position:relative}
-.card .x{position:absolute;top:6px;right:8px;color:#b00020;font-weight:bold;cursor:pointer}
-
-.admin-btn{position:fixed;bottom:10px;right:10px}
-#adminPanel{position:fixed;bottom:60px;right:10px;background:#111;border:1px solid #b00020;border-radius:10px;padding:15px;width:260px}
-#adminPanel h3{text-align:center;margin-top:0}
-.admin-close{position:absolute;top:5px;right:8px;cursor:pointer;color:#b00020}
-
-.alert{background:#b00020;padding:15px;border-radius:10px;text-align:center;margin:20px}
-
-canvas{max-width:600px;margin:30px auto}
+header{
+ text-align:center;
+ padding:20px;
+}
+h1{
+ color:#e10600;
+ font-size:40px;
+ margin:0;
+}
+h2{
+ font-weight:normal;
+ margin:5px 0 20px;
+}
+input,button,select{
+ background:#111;
+ border:1px solid #e10600;
+ color:#fff;
+ padding:8px;
+ margin:5px 0;
+ width:100%;
+}
+button{
+ cursor:pointer;
+}
+.container{
+ max-width:900px;
+ margin:auto;
+ padding:10px;
+}
+.card{
+ border:1px solid #e10600;
+ padding:10px;
+ margin:10px 0;
+ position:relative;
+ background:#0b0b0b;
+}
+.card .delete{
+ position:absolute;
+ top:5px;
+ right:8px;
+ cursor:pointer;
+ color:#e10600;
+ font-weight:bold;
+}
+.footer-admin{
+ position:fixed;
+ bottom:0;
+ width:100%;
+ background:#050505;
+ padding:10px;
+ text-align:center;
+}
+#adminPanel{
+ background:#080808;
+ padding:10px;
+ border-top:2px solid #e10600;
+}
+canvas{
+ background:#000;
+ margin-top:20px;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ACCESO -->
-<div id="lock">
-  <h3>Clave de acceso</h3>
-  <input id="accessInput" type="password">
-  <button onclick="checkAccess()">Entrar</button>
+<div id="accessScreen" class="container">
+ <h2>Clave de acceso</h2>
+ <input type="password" id="accessPin" placeholder="Clave">
+ <button onclick="enterApp()">Entrar</button>
 </div>
+
+<div id="app" class="hidden">
 
 <header>
-  <h1>Empyre Singles</h1>
-  <h2>Intercambio candente</h2>
+ <h1>Empyre Singles</h1>
+ <h2>Intercambio candente</h2>
 </header>
 
-<!-- CREAR FICHA -->
-<div id="form">
-  <input id="userInput" placeholder="@user">
-  <input id="fetishInput" placeholder="Fetiche">
-  <button onclick="createCard()">Crear ficha</button>
-</div>
+<div class="container">
 
-<!-- FICHAS -->
+<h3>Crear ficha</h3>
+<input id="userInput" placeholder="@usuario">
+<input id="fetishInput" placeholder="Fetiche">
+<p>Monedas: ??</p>
+<button onclick="createCard()">Crear</button>
+
 <div id="cards"></div>
 
 <canvas id="chart"></canvas>
 
-<!-- ADMIN -->
-<div class="admin-btn">
-  <button onclick="openAdmin()">Administración</button>
+</div>
+
+<div class="footer-admin">
+ <button onclick="openAdmin()">Administración</button>
 </div>
 
 <div id="adminPanel" class="hidden">
-  <div class="admin-close" onclick="closeAdmin()">X</div>
-  <h3>Admin</h3>
+ <h3>Panel admin</h3>
+ <input type="password" id="adminPin" placeholder="PIN admin">
+ <button onclick="enterAdmin()">Entrar</button>
 
-  <div id="adminLogin">
-    <input id="adminPin" placeholder="PIN">
-    <button onclick="enterAdmin()">Entrar</button>
-  </div>
-
-  <div id="adminControls" class="hidden">
-    <select id="userSelect"></select>
-    <input id="coinsEdit" type="number" placeholder="Monedas">
-    <input id="priceEdit" type="number" placeholder="Precio fetiche">
-    <button onclick="saveEdits()">Guardar</button>
-
-    <hr>
-    <button onclick="toggleCoins()">Mostrar / Ocultar monedas</button>
-    <button onclick="resetGame()">Cerrar juego (RESET)</button>
-
-    <hr>
-    <input id="newAccess" placeholder="Nueva clave acceso">
-    <button onclick="changeAccess()">Cambiar clave</button>
-  </div>
+ <div id="adminControls" class="hidden">
+  <select id="userSelect"></select>
+  <input type="number" id="editCoins" placeholder="Redpoints">
+  <input type="number" id="editPrice" placeholder="Precio fetiche">
+  <button onclick="saveEdit()">Guardar</button>
+  <button onclick="toggleCoins()">Mostrar / Ocultar monedas</button>
+  <button onclick="closeGame()">Cerrar juego</button>
+  <button onclick="exitAdmin()">X</button>
+ </div>
 </div>
 
-<div id="winner" class="alert hidden">
-  Ganador con 20 Redpoints.<br>
-  Toma captura y comparte con administración.
 </div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 const firebaseConfig={
  apiKey:"AIzaSyAFbvgQ90F3LK6bdjIV9ZrklqG7AOa_SP8",
  authDomain:"empyre-singles-4d9e5.firebaseapp.com",
- projectId:"empyre-singles-4d9e5"
+ projectId:"empyre-singles-4d9e5",
+ storageBucket:"empyre-singles-4d9e5.firebasestorage.app",
+ messagingSenderId:"131407484794",
+ appId:"1:131407484794:web:1041dce4e48264713368c3"
 };
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
 let admin=false;
-let coinsVisible=false;
-let accessCode="2025";
+let showCoins=false;
 let chart;
 
-// CONFIG GLOBAL
-db.collection("config").doc("game").onSnapshot(d=>{
- if(d.exists){
-  const c=d.data();
-  accessCode=c.accessCode;
-  coinsVisible=c.coinsVisible;
- }
-});
-
-// ACCESO
-function checkAccess(){
- if(accessInput.value===accessCode){
-  document.getElementById("lock").remove();
+function enterApp(){
+ if(document.getElementById("accessPin").value==="2025"){
+  accessScreen.classList.add("hidden");
+  app.classList.remove("hidden");
  }
 }
 
-// CREAR FICHA
-function createCard(){
- const u=userInput.value.trim();
- const f=fetishInput.value.trim();
- if(!u||!f)return;
- db.collection("cards").add({user:u,fetish:f,coins:10,price:0});
- userInput.value="";fetishInput.value="";
-}
-
-// RENDER
-db.collection("cards").onSnapshot(s=>{
- cards.innerHTML="";
- let data=[];
- let winner=false;
- s.forEach(doc=>{
-  const d=doc.data();
-  data.push(d);
-  if(d.coins>=20) winner=true;
-  const c=document.createElement("div");
-  c.className="card";
-  c.innerHTML=`
-   <div class="x" onclick="delCard('${doc.id}')">X</div>
-   <b>${d.user}</b><br>
-   ${d.fetish}<br>
-   Monedas: ${coinsVisible?d.coins:"??"}
-  `;
-  cards.appendChild(c);
- });
- renderChart(data);
- document.getElementById("winner").classList.toggle("hidden",!winner);
- populateSelect();
-});
-
-// BORRAR
-function delCard(id){
- if(confirm("¿Borrar ficha?")){
-  db.collection("cards").doc(id).delete();
- }
-}
-
-// ADMIN
 function openAdmin(){
- document.getElementById("adminPanel").classList.remove("hidden");
- admin=false;
- adminLogin.classList.remove("hidden");
- adminControls.classList.add("hidden");
- adminPin.value="";
+ adminPanel.classList.remove("hidden");
 }
-function closeAdmin(){
- document.getElementById("adminPanel").classList.add("hidden");
- admin=false;
-}
+
 function enterAdmin(){
  if(adminPin.value==="0204"){
   admin=true;
-  adminLogin.classList.add("hidden");
   adminControls.classList.remove("hidden");
+  populateSelect();
  }
 }
 
-// SELECT
+function exitAdmin(){
+ admin=false;
+ adminPanel.classList.add("hidden");
+ adminControls.classList.add("hidden");
+ adminPin.value="";
+}
+
+function createCard(){
+ const user=userInput.value;
+ const fetish=fetishInput.value;
+ if(!user||!fetish)return;
+ db.collection("cards").add({
+  user,fetish,
+  coins:10,
+  price:0
+ });
+ userInput.value="";
+ fetishInput.value="";
+}
+
 function populateSelect(){
- if(!admin)return;
  userSelect.innerHTML="";
  db.collection("cards").get().then(s=>{
   s.forEach(d=>{
@@ -202,65 +195,75 @@ function populateSelect(){
    userSelect.appendChild(o);
   });
  });
- userSelect.onchange=()=>{
-  coinsEdit.value="";
-  priceEdit.value="";
- };
 }
 
-// GUARDAR
-function saveEdits(){
- if(!admin)return;
+function saveEdit(){
  const id=userSelect.value;
+ if(!id)return;
  db.collection("cards").doc(id).update({
-  coins:Number(coinsEdit.value),
-  price:Number(priceEdit.value)
+  coins:Number(editCoins.value),
+  price:Number(editPrice.value)
  });
- coinsEdit.value="";priceEdit.value="";
+ editCoins.value="";
+ editPrice.value="";
 }
 
-// TOGGLE MONEDAS
 function toggleCoins(){
- db.collection("config").doc("game").set({
-  accessCode,
-  coinsVisible:!coinsVisible
- });
+ showCoins=!showCoins;
 }
 
-// RESET
-function resetGame(){
- if(!confirm("¿Cerrar juego y borrar todo?"))return;
- db.collection("cards").get().then(s=>{
-  s.forEach(d=>d.ref.delete());
- });
- db.collection("config").doc("game").set({
-  accessCode,
-  coinsVisible:false
- });
-}
-
-// CAMBIAR CLAVE
-function changeAccess(){
- if(newAccess.value.length===4){
-  db.collection("config").doc("game").set({
-   accessCode:newAccess.value,
-   coinsVisible
+function closeGame(){
+ if(confirm("¿Cerrar juego y borrar todo?")){
+  db.collection("cards").get().then(s=>{
+   s.forEach(d=>d.ref.delete());
   });
-  alert("Clave cambiada");
-  newAccess.value="";
+  showCoins=false;
  }
 }
 
-// CHART
-function renderChart(data){
- data.sort((a,b)=>b.coins-a.coins);
- const ctx=document.getElementById("chart");
+db.collection("cards").onSnapshot(s=>{
+ cards.innerHTML="";
+ const data=[];
+ s.forEach(d=>{
+  const c=d.data();
+  const div=document.createElement("div");
+  div.className="card";
+  div.innerHTML=`
+   <span class="delete" onclick="deleteCard('${d.id}')">X</span>
+   <b>${c.user}</b><br>
+   ${c.fetish}<br>
+   ${showCoins?"Redpoints: "+c.coins:"Redpoints: ??"}<br>
+   Precio: ${c.price}
+  `;
+  cards.appendChild(div);
+  data.push({user:c.user,coins:c.coins});
+ });
+ updateChart(data);
+ populateSelect();
+});
+
+function deleteCard(id){
+ if(confirm("¿Borrar ficha?")){
+  db.collection("cards").doc(id).delete();
+ }
+}
+
+function updateChart(data){
  if(chart)chart.destroy();
- chart=new Chart(ctx,{
+ chart=new Chart(document.getElementById("chart"),{
   type:"line",
-  data:{labels:data.map(d=>d.user),datasets:[{data:data.map(d=>d.coins)}]}
+  data:{
+   labels:data.map(d=>d.user),
+   datasets:[{
+    data:data.map(d=>d.coins),
+    borderColor:"#e10600",
+    fill:false
+   }]
+  },
+  options:{plugins:{legend:{display:false}}}
  });
 }
 </script>
+
 </body>
 </html>
