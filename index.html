@@ -13,16 +13,16 @@ header{text-align:center;padding:15px}
 h1{color:#e10600;font-size:36px;margin:0}
 h2{font-weight:normal;margin-top:3px;font-size:18px}
 .container{max-width:600px;margin:auto;padding:10px}
-input,button{width:100%;padding:6px;margin:4px 0;background:#111;border:1px solid #e10600;color:#fff;font-size:14px}
+input,button{width:100%;padding:5px;margin:3px 0;background:#111;border:1px solid #e10600;color:#fff;font-size:13px}
 button{cursor:pointer}
 #cards{max-height:300px;overflow-y:auto}
 #adminList{max-height:300px;overflow-y:auto}
-.card{border:1px solid #e10600;padding:6px;margin:4px 0;background:#0b0b0b;position:relative;font-size:14px;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
+.card{border:1px solid #e10600;padding:5px;margin:3px 0;background:#0b0b0b;position:relative;font-size:13px;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
 .card-info{display:flex;flex-direction:column;}
 .delete{cursor:pointer;color:#e10600;font-weight:bold;margin-left:8px}
 .footer{position:fixed;bottom:0;width:100%;background:#050505;padding:10px;text-align:center}
 #adminPanel{position:fixed;bottom:0;width:100%;background:#080808;border-top:2px solid #e10600;padding:10px;max-height:350px;overflow-y:auto}
-.admin-card{border:1px solid #333;padding:6px;margin:4px 0;font-size:14px;border-radius:4px}
+.admin-card{border:1px solid #333;padding:5px;margin:3px 0;font-size:13px;border-radius:4px}
 canvas{margin-top:10px;width:100% !important;height:200px !important;}
 </style>
 </head>
@@ -67,10 +67,14 @@ canvas{margin-top:10px;width:100% !important;height:200px !important;}
   <button onclick="closeAdmin()">X</button>
   <h4>Editar fichas</h4>
   <div id="adminList"></div>
+  <h4>Cambiar contraseña de acceso</h4>
+  <input type="password" id="newAccessPin" placeholder="Nueva clave de acceso">
+  <button onclick="changeAccessPin()">Guardar clave</button>
  </div>
 </div>
 
 <script>
+let accessPassword="2025"; // clave inicial
 const firebaseConfig={
  apiKey:"AIzaSyAFbvgQ90F3LK6bdjIV9ZrklqG7AOa_SP8",
  authDomain:"empyre-singles-4d9e5.firebaseapp.com",
@@ -92,9 +96,11 @@ let chart;
 
 // ACCESO
 function enter(){
- if(accessPin.value==="2025"){
+ if(accessPin.value===accessPassword){
   access.classList.add("hidden");
   app.classList.remove("hidden");
+ } else {
+  alert("Clave incorrecta");
  }
 }
 
@@ -161,6 +167,15 @@ function save(id){
  });
 }
 
+// CAMBIAR CLAVE DE ACCESO
+function changeAccessPin(){
+ if(newAccessPin.value){
+  accessPassword=newAccessPin.value;
+  alert("Clave de acceso cambiada!");
+  newAccessPin.value="";
+ }
+}
+
 // RENDER CARDS
 function renderCards(){
  db.collection("cards").get().then(s=>{
@@ -175,8 +190,8 @@ function renderCards(){
     div.className="card";
     div.innerHTML=`
      <div class="card-info">
-      <b>${c.user}</b>
-      ${c.fetish} | Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
+      <b>${c.user}</b> | ${c.fetish} <br>
+      Redpoints: ${visible?c.coins:"??"} | Precio: ${c.price}
      </div>
      <span class="delete" data-id="${d.id}">X</span>
     `;
